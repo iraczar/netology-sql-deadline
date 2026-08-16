@@ -1,0 +1,57 @@
+plugins {
+    id 'java'
+    id 'io.qameta.allure' version '2.11.2'
+}
+
+group = 'ru.netology.qa'
+version = '1.0'
+
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Selenide — UI-тесты
+    implementation 'com.codeborne:selenide:6.19.1'
+
+    // JUnit 5
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.2'
+
+    // MySQL JDBC-драйвер
+    implementation 'com.mysql:mysql-connector-j:8.3.0'
+
+    // Apache DBUtils — работа с БД в SqlHelper
+    implementation 'commons-dbutils:commons-dbutils:1.8.1'
+
+    // BCrypt — совместим с PasswordEncoder внутри SUT
+    implementation 'org.springframework.security:spring-security-crypto:5.8.11'
+    implementation 'commons-logging:commons-logging:1.3.0'
+
+    // REST-assured — API-тесты (Задача №2, необязательная)
+    testImplementation 'io.rest-assured:rest-assured:5.4.0'
+
+    // Allure для JUnit 5
+    testImplementation 'io.qameta.allure:allure-junit5:2.25.0'
+}
+
+test {
+    useJUnitPlatform()
+    systemProperty 'db.url', System.getProperty('db.url', 'jdbc:mysql://localhost:3306/app')
+    systemProperty 'db.user', System.getProperty('db.user', 'app')
+    systemProperty 'db.password', System.getProperty('db.password', 'pass')
+    testLogging {
+        events "passed", "skipped", "failed"
+        exceptionFormat "full"
+    }
+}
+
+allure {
+    version = '2.25.0'
+    useJUnit5 {
+        version = '2.25.0'
+    }
+}
