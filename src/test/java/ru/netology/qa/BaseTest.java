@@ -3,11 +3,6 @@ package ru.netology.qa;
 import com.codeborne.selenide.Configuration;
 import org.junit.jupiter.api.BeforeAll;
 
-/**
- * Общие настройки Selenide для всех UI-тестов.
- * SUT должен быть уже запущен на http://localhost:9999 (см. README.md,
- * шаг "Запуск SUT") до того, как вы запустите тесты.
- */
 public class BaseTest {
 
     @BeforeAll

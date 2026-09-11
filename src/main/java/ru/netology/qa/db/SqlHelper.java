@@ -9,17 +9,6 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.UUID;
 
-/**
- * Единственное место в проекте, которое напрямую обращается к базе данных.
- * Вся работа идёт через Apache Commons DBUtils (QueryRunner), как того требует задание.
- * <p>
- * Параметры подключения берутся из системных свойств (заданы в build.gradle,
- * значения по умолчанию совпадают с docker-compose.yml и со значениями,
- * зашитыми внутри app-deadline.jar по умолчанию):
- * db.url      -> jdbc:mysql://localhost:3306/app
- * db.user     -> app
- * db.password -> pass
- */
 public class SqlHelper {
 
     private static final QueryRunner RUNNER = new QueryRunner();
@@ -35,16 +24,6 @@ public class SqlHelper {
         return DriverManager.getConnection(url, user, password);
     }
 
-    /**
-     * Создаёт нового пользователя напрямую в БД, минуя SUT.
-     * Пароль сохраняется в зашифрованном (BCrypt) виде — так же,
-     * как это делает сам SUT (внутри используется Spring Security PasswordEncoder),
-     * поэтому созданный пользователь сможет залогиниться через форму с открытым паролем.
-     *
-     * @param login       логин пользователя
-     * @param rawPassword пароль в открытом виде (именно его нужно вводить в форму)
-     * @return id созданного пользователя
-     */
     public static String createUser(String login, String rawPassword) {
         String id = UUID.randomUUID().toString();
         String hashedPassword = ENCODER.encode(rawPassword);
@@ -54,15 +33,10 @@ public class SqlHelper {
                     id, login, hashedPassword, "active");
             return id;
         } catch (SQLException e) {
-            throw new RuntimeException("Не удалось создать пользователя в БД", e);
+            throw new RuntimeException("Ne udalos sozdat polzovatelya v BD", e);
         }
     }
 
-    /**
-     * Возвращает последний сгенерированный код подтверждения для пользователя.
-     * Именно так тест "подсматривает" одноразовый код, который в реальной жизни
-     * пользователь получил бы по SMS/email, и вводит его в форму верификации.
-     */
     public static String getVerificationCode(String login) {
         long deadline = System.currentTimeMillis() + 5000;
         String code = null;
@@ -75,7 +49,7 @@ public class SqlHelper {
                                 "ORDER BY ac.created DESC LIMIT 1;",
                         new ScalarHandler<String>(), login);
             } catch (SQLException e) {
-                throw new RuntimeException("Не удалось получить код подтверждения из БД", e);
+                throw new RuntimeException("Ne udalos poluchit kod podtverzhdeniya iz BD", e);
             }
             if (code != null) {
                 return code;
@@ -86,28 +60,9 @@ public class SqlHelper {
                 Thread.currentThread().interrupt();
             }
         }
-        throw new RuntimeException("Код подтверждения не появился в БД для пользователя " + login + " за 5 секунд");
+        throw new RuntimeException("Kod podtverzhdeniya ne poyavilsya v BD dlya " + login);
     }
 
-    /**
-     * Возвращает текущий баланс карты в копейках напрямую из БД —
-     * используется, чтобы проверить результат перевода независимо от ответа API.
-     */
-    public static int getCardBalanceInKopecks(String cardNumber) {
-        try (Connection conn = getConnection()) {
-            Object result = RUNNER.query(conn,
-                    "SELECT balance_in_kopecks FROM cards WHERE number = ?;",
-                    new ScalarHandler<>(), cardNumber);
-            return ((Number) result).intValue();
-        } catch (SQLException e) {
-            throw new RuntimeException("Не удалось получить баланс карты из БД", e);
-        }
-    }
-
-    /**
-     * Удаляет пользователя и всё, что на него ссылается (коды подтверждения, карты).
-     * Используется в @AfterAll, чтобы не засорять базу тестовыми пользователями.
-     */
     public static void cleanUpUser(String login) {
         try (Connection conn = getConnection()) {
             RUNNER.update(conn,
@@ -116,7 +71,7 @@ public class SqlHelper {
                     "DELETE FROM cards WHERE user_id = (SELECT id FROM users WHERE login = ?);", login);
             RUNNER.update(conn, "DELETE FROM users WHERE login = ?;", login);
         } catch (SQLException e) {
-            throw new RuntimeException("Не удалось удалить тестового пользователя", e);
+            throw new RuntimeException("Ne udalos udalit testovogo polzovatelya", e);
         }
     }
 }

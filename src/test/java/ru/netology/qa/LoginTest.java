@@ -29,8 +29,7 @@ class LoginTest extends BaseTest {
     }
 
     @Test
-    @Description("Пользователь, созданный напрямую в БД через SqlHelper, " +
-            "должен успешно пройти двухфакторный вход: логин/пароль -> код из БД -> дашборд")
+    @Description("Login s validnym kodom iz BD dolzhen otkryvat dashboard")
     void shouldLoginWithValidCredentialsAndVerificationCode() {
         open("/");
         LoginPage loginPage = new LoginPage();
@@ -43,8 +42,7 @@ class LoginTest extends BaseTest {
     }
 
     @Test
-    @Description("При неверном пароле форма логина должна показать сообщение об ошибке " +
-            "и не пускать пользователя дальше")
+    @Description("Nevernyy parol dolzhen pokazyvat oshibku")
     void shouldShowErrorMessageOnWrongPassword() {
         open("/");
         LoginPage loginPage = new LoginPage();
@@ -53,14 +51,8 @@ class LoginTest extends BaseTest {
         loginPage.getErrorNotification().shouldBe(visible);
     }
 
-    /**
-     * Известный дефект SUT (воспроизведён вручную curl'ом): блокировка после 3 неверных
-     * попыток не срабатывает. Тест фиксирует фактическое поведение — см. README,
-     * раздел "Найденные дефекты".
-     */
     @Test
-    @Description("Известный баг: после 3 неверных попыток входа блокировка НЕ срабатывает " +
-            "(ожидается по ТЗ, но не реализовано в SUT) — см. README, раздел 'Найденные дефекты'")
+    @Description("Izvestnyy bag: blokirovka posle 3 nevernyh popytok ne rabotaet")
     void knownBug_userIsNotBlockedAfterThreeWrongAttempts() {
         open("/");
         LoginPage loginPage = new LoginPage();
