@@ -33,34 +33,21 @@ public class SqlHelper {
                     id, login, hashedPassword, "active");
             return id;
         } catch (SQLException e) {
-            throw new RuntimeException("Ne udalos sozdat polzovatelya v BD", e);
+            throw new RuntimeException("Could not create user", e);
         }
     }
 
     public static String getVerificationCode(String login) {
-        long deadline = System.currentTimeMillis() + 5000;
-        String code = null;
-        while (System.currentTimeMillis() < deadline) {
-            try (Connection conn = getConnection()) {
-                code = RUNNER.query(conn,
-                        "SELECT ac.code FROM auth_codes ac " +
-                                "JOIN users u ON u.id = ac.user_id " +
-                                "WHERE u.login = ? " +
-                                "ORDER BY ac.created DESC LIMIT 1;",
-                        new ScalarHandler<String>(), login);
-            } catch (SQLException e) {
-                throw new RuntimeException("Ne udalos poluchit kod podtverzhdeniya iz BD", e);
-            }
-            if (code != null) {
-                return code;
-            }
-            try {
-                Thread.sleep(200);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
+        try (Connection conn = getConnection()) {
+            return RUNNER.query(conn,
+                    "SELECT ac.code FROM auth_codes ac " +
+                            "JOIN users u ON u.id = ac.user_id " +
+                            "WHERE u.login = ? " +
+                            "ORDER BY ac.created DESC LIMIT 1;",
+                    new ScalarHandler<String>(), login);
+        } catch (SQLException e) {
+            throw new RuntimeException("Could not get verification code", e);
         }
-        throw new RuntimeException("Kod podtverzhdeniya ne poyavilsya v BD dlya " + login);
     }
 
     public static void cleanUpUser(String login) {
@@ -71,7 +58,7 @@ public class SqlHelper {
                     "DELETE FROM cards WHERE user_id = (SELECT id FROM users WHERE login = ?);", login);
             RUNNER.update(conn, "DELETE FROM users WHERE login = ?;", login);
         } catch (SQLException e) {
-            throw new RuntimeException("Ne udalos udalit testovogo polzovatelya", e);
+            throw new RuntimeException("Could not clean up user", e);
         }
     }
 }

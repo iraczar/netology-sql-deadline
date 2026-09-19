@@ -10,10 +10,11 @@ import ru.netology.qa.page.DashboardPage;
 import ru.netology.qa.page.LoginPage;
 import ru.netology.qa.page.VerificationPage;
 
-import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.open;
 
 class LoginTest extends BaseTest {
+
+    private static final String AUTH_INVALID_MESSAGE = "Ошибка! Неверно указан логин или пароль";
 
     private DataHelper.UserInfo user;
 
@@ -29,7 +30,7 @@ class LoginTest extends BaseTest {
     }
 
     @Test
-    @Description("Login s validnym kodom iz BD dolzhen otkryvat dashboard")
+    @Description("Успешный вход с валидным кодом из БД открывает личный кабинет")
     void shouldLoginWithValidCredentialsAndVerificationCode() {
         open("/");
         LoginPage loginPage = new LoginPage();
@@ -42,24 +43,24 @@ class LoginTest extends BaseTest {
     }
 
     @Test
-    @Description("Nevernyy parol dolzhen pokazyvat oshibku")
+    @Description("Неверный пароль показывает сообщение об ошибке")
     void shouldShowErrorMessageOnWrongPassword() {
         open("/");
         LoginPage loginPage = new LoginPage();
         loginPage.login(user.getLogin(), DataHelper.getInvalidPassword());
 
-        loginPage.getErrorNotification().shouldBe(visible);
+        loginPage.checkErrorNotification(AUTH_INVALID_MESSAGE);
     }
 
     @Test
-    @Description("Izvestnyy bag: blokirovka posle 3 nevernyh popytok ne rabotaet")
+    @Description("Известный баг: блокировка после 3 неверных попыток не срабатывает")
     void knownBug_userIsNotBlockedAfterThreeWrongAttempts() {
         open("/");
         LoginPage loginPage = new LoginPage();
 
         for (int attempt = 1; attempt <= 3; attempt++) {
             loginPage.login(user.getLogin(), DataHelper.getInvalidPassword());
-            loginPage.getErrorNotification().shouldBe(visible);
+            loginPage.checkErrorNotification(AUTH_INVALID_MESSAGE);
             open("/");
             loginPage = new LoginPage();
         }

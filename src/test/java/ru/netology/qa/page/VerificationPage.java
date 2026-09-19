@@ -2,6 +2,8 @@ package ru.netology.qa.page;
 
 import com.codeborne.selenide.SelenideElement;
 
+import static com.codeborne.selenide.Condition.text;
+import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$;
 
 public class VerificationPage {
@@ -10,10 +12,8 @@ public class VerificationPage {
     private final SelenideElement verifyButton = $("[data-test-id='action-verify']");
     private final SelenideElement errorNotification = $("[data-test-id='error-notification']");
 
-    public DashboardPage validVerify(String code) {
-        codeField.setValue(code);
-        verifyButton.click();
-        return new DashboardPage();
+    public VerificationPage() {
+        codeField.shouldBe(visible);
     }
 
     public void verify(String code) {
@@ -21,7 +21,12 @@ public class VerificationPage {
         verifyButton.click();
     }
 
-    public SelenideElement getErrorNotification() {
-        return errorNotification;
+    public DashboardPage validVerify(String code) {
+        verify(code);
+        return new DashboardPage();
+    }
+
+    public void checkErrorNotification(String expectedText) {
+        errorNotification.shouldBe(visible).shouldHave(text(expectedText));
     }
 }
