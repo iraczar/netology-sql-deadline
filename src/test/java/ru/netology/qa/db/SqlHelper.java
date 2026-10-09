@@ -50,15 +50,16 @@ public class SqlHelper {
         }
     }
 
-    public static void cleanUpUser(String login) {
+    public static void cleanUpTestUsers() {
         try (Connection conn = getConnection()) {
             RUNNER.update(conn,
-                    "DELETE FROM auth_codes WHERE user_id = (SELECT id FROM users WHERE login = ?);", login);
+                    "DELETE FROM auth_codes WHERE user_id IN (SELECT id FROM users WHERE login LIKE 'user\\_%');");
             RUNNER.update(conn,
-                    "DELETE FROM cards WHERE user_id = (SELECT id FROM users WHERE login = ?);", login);
-            RUNNER.update(conn, "DELETE FROM users WHERE login = ?;", login);
+                    "DELETE FROM cards WHERE user_id IN (SELECT id FROM users WHERE login LIKE 'user\\_%');");
+            RUNNER.update(conn,
+                    "DELETE FROM users WHERE login LIKE 'user\\_%';");
         } catch (SQLException e) {
-            throw new RuntimeException("Could not clean up user", e);
+            throw new RuntimeException("Could not clean up test users", e);
         }
     }
 }

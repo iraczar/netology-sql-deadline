@@ -105,7 +105,7 @@ Responding at http://0.0.0.0:9999
 
 ### Из IntelliJ IDEA
 
-- Откройте `src/test/java/ru/netology/qa/LoginTest.java`.
+- Откройте `src/test/java/ru/netology/qa/page/LoginTest.java`.
 - Кликните правой кнопкой мыши по имени класса в редакторе (или по зелёной стрелке
   слева от объявления класса) → `Run 'LoginTest'`.
 - Внизу откроется панель с результатами: зелёная галочка у каждого теста — тест прошёл,

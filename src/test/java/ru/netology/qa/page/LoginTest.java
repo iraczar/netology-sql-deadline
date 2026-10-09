@@ -1,7 +1,7 @@
 package ru.netology.qa;
 
 import io.qameta.allure.Description;
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.netology.qa.data.DataHelper;
@@ -24,9 +24,9 @@ class LoginTest extends BaseTest {
         SqlHelper.createUser(user.getLogin(), user.getPassword());
     }
 
-    @AfterEach
-    void removeTestUser() {
-        SqlHelper.cleanUpUser(user.getLogin());
+    @AfterAll
+    static void cleanUpDatabase() {
+        SqlHelper.cleanUpTestUsers();
     }
 
     @Test
@@ -53,8 +53,8 @@ class LoginTest extends BaseTest {
     }
 
     @Test
-    @Description("Известный баг: блокировка после 3 неверных попыток не срабатывает")
-    void knownBug_userIsNotBlockedAfterThreeWrongAttempts() {
+    @Description("После 3 неверных попыток входа аккаунт должен блокироваться")
+    void shouldBlockUserAfterThreeWrongAttempts() {
         open("/");
         LoginPage loginPage = new LoginPage();
 
@@ -65,10 +65,7 @@ class LoginTest extends BaseTest {
             loginPage = new LoginPage();
         }
 
-        VerificationPage verificationPage = loginPage.validLogin(user.getLogin(), user.getPassword());
-        String code = SqlHelper.getVerificationCode(user.getLogin());
-        DashboardPage dashboardPage = verificationPage.validVerify(code);
-
-        dashboardPage.checkDashboardIsVisible();
+        loginPage.login(user.getLogin(), user.getPassword());
+        loginPage.checkErrorNotification("Ошибка! Пользователь заблокирован");
     }
 }
